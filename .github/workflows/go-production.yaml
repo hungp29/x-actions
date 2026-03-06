@@ -59,11 +59,9 @@ jobs:
       - name: Set environment variables
         id: set-env
         run: |
-          {
-            echo 'BUILD_CONFIG<<EOF'
-            echo '${{ toJson(matrix.app.cicd.workflows.jobs["build-and-unit-test"]) }}'
-            echo EOF
-          } >> $GITHUB_ENV
+          APP_JSON='${{ toJson(matrix.app) }}'
+          BUILD_CONFIG=$(echo "$APP_JSON" | jq -c '.cicd.workflows.jobs["build-and-unit-test"]')
+          echo "BUILD_CONFIG=$BUILD_CONFIG" >> $GITHUB_ENV
       - name: Checkout repository
         uses: actions/checkout@v4
     

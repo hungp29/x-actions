@@ -42,8 +42,11 @@ jobs:
             exit 1
           fi
 
-          CONFIG=$(yq -o=json '.' "$FILE")
-          echo "contract=$CONFIG" >> $GITHUB_OUTPUT
+          {
+            echo "contract<<EOF"
+            yq -o=json '.' "$FILE"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
   docker-and-helm:
     name: 'docker-and-helm (${{ matrix.app.name }})'
     runs-on: ubuntu-latest

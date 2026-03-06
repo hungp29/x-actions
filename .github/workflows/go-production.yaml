@@ -3,10 +3,20 @@ run-name: 'Production - ${{ github.ref_name }}'
 
 on:
   workflow_call:
+    inputs:
+      contract-file:
+        description: 'Path to CI contract file'
+        type: string
+        default: '.github/config/ci.yaml'
+        required: false
 
 jobs:
   retrieve-contract:
     runs-on: ubuntu-latest
+    outputs:
+      configuration: ${{ steps.parse-contract.outputs.contract }}
+      release-version: ${{ steps.set-version.outputs.release-version }}
+      sha-short: ${{ steps.set-sha.outputs.sha-short }}
     steps:
       - uses: actions/checkout@v4
 
@@ -21,4 +31,33 @@ jobs:
       - name: Set version
         id: set-version
         run: echo "release-version=${{ format('1.{0}.{1}-{2}-{3}', steps.set-date.outputs.date-time, github.run_number, github.ref_name, steps.set-sha.outputs.sha-short) }}" >> "$GITHUB_OUTPUT"
+      
+      - name: Parse CI contract
+        id: parse-contract
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs')
+            const yaml = require('js-yaml')
+
+            const path = "${{ inputs.contract-file }}"
+            if (!fs.existsSync(path)) {
+              core.setFailed(`Config file not found: ${path}`)
+            } else {
+              const file = fs.readFileSync(path, 'utf8')
+              const data = yaml.load(file)
+
+              core.setOutput("contract", JSON.stringify(data))
+            }
+  docker-and-helm:
+    name: 'docker-and-helm (${{ matrix.app.name }})'
+    runs-on: ubuntu-latest
+    needs: retrieve-contract
+    strategy:
+      fail-fast: true
+      matrix:
+        app: ${{ fromJson(needs.retrieve-contract.outputs.configuration).apps }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
     

@@ -56,6 +56,14 @@ jobs:
       matrix:
         app: ${{ fromJson(needs.retrieve-contract.outputs.configuration).apps }}
     steps:
+      - name: Set environment variables
+        id: set-env
+        run: |
+          {
+            echo 'BUILD_CONFIG<<EOF'
+            echo '${{ toJson(matrix.app.cicd.workflows.jobs["build-and-unit-test"]) }}'
+            echo EOF
+          } >> $GITHUB_ENV
       - name: Checkout repository
         uses: actions/checkout@v4
     

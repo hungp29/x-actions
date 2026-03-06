@@ -61,7 +61,23 @@ jobs:
         run: |
           APP_JSON='${{ toJson(matrix.app) }}'
           BUILD_CONFIG=$(echo "$APP_JSON" | jq -c '.cicd.workflows.jobs["build-and-unit-test"]')
+          CONTAINERIZE_CONFIG=$(echo "$APP_JSON" | jq -c '.cicd.workflows.jobs["containerize-and-package"]')
           echo "BUILD_CONFIG=$BUILD_CONFIG" >> $GITHUB_ENV
+          echo "CONTAINERIZE_CONFIG=$CONTAINERIZE_CONFIG" >> $GITHUB_ENV
+      
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Set common variables
+        id: set-vars
+        run: |
+          echo "go-version=$(echo "$BUILD_CONFIG" | jq -r '."go-version"')" >> "$GITHUB_OUTPUT"
+          echo "dockerfile-path=$(echo "$CONTAINERIZE_CONFIG" | jq -r '."dockerfile-path"')" >> "$GITHUB_OUTPUT"
+          echo "image-name=$(echo "$CONTAINERIZE_CONFIG" | jq -r '."image-name"')" >> "$GITHUB_OUTPUT"
+          echo "release-version=${{ needs.retrieve-contract.outputs.release-version }}" >> "$GITHUB_OUTPUT"
+          echo "chart-path=$(echo "$CONTAINERIZE_CONFIG" | jq -r '."chart-path"')" >> "$GITHUB_OUTPUT"
     
+      - name: 'Setup Go ${{ steps.set-vars.outputs.go-version }}'
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ steps.set-vars.outputs.go-version }}

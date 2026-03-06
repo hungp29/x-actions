@@ -55,6 +55,9 @@ jobs:
       fail-fast: true
       matrix:
         app: ${{ fromJson(needs.retrieve-contract.outputs.configuration).apps }}
+    permissions:
+      contents: read
+      packages: write
     steps:
       - name: Set environment variables
         id: set-env

@@ -1,0 +1,60 @@
+name: Create Deployment PR
+
+inputs:
+  app-name:
+    description: 'The name of the app to deploy'
+    required: true
+  release-version:
+    description: 'The release version to deploy'
+    required: true
+  argocd-file:
+    description: 'The ArgoCD file to deploy'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout x-deployk8s Repository
+      uses: actions/checkout@v4
+      with:
+        repository: hungp29/x-deployk8s
+        token: ${{ secrets.X_DEPLOYK8S_REPO_TOKEN }}
+        github-server-url: "https://github.com"
+        fetch-depth: 1
+    
+    - name: Update target version
+      run: |
+        sed -i "s/targetRevision: \".*\"/targetRevision: \"${{ inputs.release-version }}\"/" applications/${{ env.ARGOCD_FILE }}
+
+    - name: Set pr title and body
+      id: set-pr-title-and-body
+      shell: bash
+      run: |
+        echo "pr_title=chore(${{ inputs.app-name }}): update target revision to ${{ inputs.release-version }} for ${{ inputs.app-name }}" >> $GITHUB_OUTPUT
+        echo "pr_body=Auto-generated PR to update target revision to ${{ inputs.release-version }} for ${{ inputs.app-name }} in ${{ env.ARGOCD_FILE }}" >> $GITHUB_OUTPUT
+
+    - name: Create Branch
+      run: |
+        git checkout -b "chore/update-${{ inputs.app-name }}-${{ inputs.release-version }}"
+
+    - name: Commit Changes
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git add applications/${{ env.ARGOCD_FILE }}
+        git commit -m "${{ steps.set-pr-title-and-body.outputs.pr_title }}" -m "${{ steps.set-pr-title-and-body.outputs.pr_body }}"
+
+    - name: Push Changes
+      run: |
+        git push origin "chore/update-${{ inputs.app-name }}-${{ inputs.release-version }}"
+
+    - name: Create PR
+      env:
+        GH_TOKEN: ${{ secrets.X_DEPLOYK8S_REPO_TOKEN }}
+      run: |
+        gh pr create \
+          --repo hungp29/x-deployk8s \
+          --base main \
+          --head "chore/update-${{ inputs.app-name }}-${{ inputs.release-version }}" \
+          --title "${{ steps.set-pr-title-and-body.outputs.pr_title }}" \
+          --body "${{ steps.set-pr-title-and-body.outputs.pr_body }}"

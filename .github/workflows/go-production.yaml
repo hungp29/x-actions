@@ -122,5 +122,29 @@ jobs:
       - name: Push Helm chart to GHCR
         run: |
           helm push ${{ matrix.app.name }}-${{ steps.set-vars.outputs.release-version }}.tgz oci://${{ steps.set-vars.outputs.registry }}/${{ github.repository_owner }}/charts
+  
+  create-deployment-pr:
+    name: 'create-deployment-pr (${{ matrix.app.name }})'
+    runs-on: ubuntu-latest
+    needs: [retrieve-contract, docker-and-helm]
+    steps:
+      - name: Set environment variables
+        id: set-env
+        run: |
+          APP_JSON='${{ toJson(matrix.app) }}'
+          CREATE_DEPLOYMENT_PR_CONFIG=$(echo "$APP_JSON" | jq -c '.cicd.workflows.jobs["create-deployment-pr"]')
+          echo "CREATE_DEPLOYMENT_PR_CONFIG=$CREATE_DEPLOYMENT_PR_CONFIG" >> $GITHUB_ENV
       
+      - name: Set common variables
+        id: set-vars
+        run: |
+          echo "release-version=${{ needs.retrieve-contract.outputs.release-version }}" >> "$GITHUB_OUTPUT"
+          echo "argocd-file=$(echo "$CREATE_DEPLOYMENT_PR_CONFIG" | jq -r '."file"')" >> "$GITHUB_OUTPUT"
+
+      - name: Create deployment PR
+        uses: hungp29/x-actions/.github/workflows/create-deployment-pr.yaml@v1.0.6
+        with:
+          app-name: ${{ matrix.app.name }}
+          release-version: ${{ steps.set-vars.outputs.release-version }}
+          argocd-file: ${{ steps.set-vars.outputs.create-deployment-pr-file }}
       

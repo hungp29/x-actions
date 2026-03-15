@@ -23,6 +23,7 @@ runs:
         fetch-depth: 1
     
     - name: Update target version
+      shell: bash
       run: |
         sed -i "s/targetRevision: \".*\"/targetRevision: \"${{ inputs.release-version }}\"/" applications/${{ inputs.argocd-file }}
 
@@ -34,10 +35,12 @@ runs:
         echo "pr_body=Auto-generated PR to update target revision to ${{ inputs.release-version }} for ${{ inputs.app-name }} in ${{ env.ARGOCD_FILE }}" >> $GITHUB_OUTPUT
 
     - name: Create Branch
+      shell: bash
       run: |
         git checkout -B chore/update-${{ inputs.app-name }}-${{ inputs.release-version }}
 
     - name: Commit Changes
+      shell: bash
       run: |
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -45,12 +48,14 @@ runs:
         git commit -m "${{ steps.set-pr-title-and-body.outputs.pr_title }}" -m "${{ steps.set-pr-title-and-body.outputs.pr_body }}" || echo "No changes"
 
     - name: Push Changes
+      shell: bash
       run: |
         git push origin "chore/update-${{ inputs.app-name }}-${{ inputs.release-version }}"
 
     - name: Create PR
       env:
         GH_TOKEN: ${{ secrets.X_DEPLOYK8S_REPO_TOKEN }}
+      shell: bash
       run: |
         gh pr create \
           --repo hungp29/x-deployk8s \

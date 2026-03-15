@@ -10,6 +10,9 @@ inputs:
   argocd-file:
     description: 'The ArgoCD file to deploy'
     required: true
+  repo-token:
+    required: true
+    description: Token to access x-deployk8s repo
 
 runs:
   using: 'composite'
@@ -18,7 +21,7 @@ runs:
       uses: actions/checkout@v4
       with:
         repository: hungp29/x-deployk8s
-        token: ${{ secrets.X_DEPLOYK8S_REPO_TOKEN }}
+        token: ${{ inputs.repo-token }}
         github-server-url: "https://github.com"
         fetch-depth: 1
     

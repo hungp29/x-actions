@@ -151,4 +151,5 @@ jobs:
           app-name: ${{ matrix.app.name }}
           release-version: ${{ steps.set-vars.outputs.release-version }}
           argocd-file: ${{ steps.set-vars.outputs.argocd-file }}
+          repo-token: ${{ secrets.X_DEPLOYK8S_REPO_TOKEN }}
       

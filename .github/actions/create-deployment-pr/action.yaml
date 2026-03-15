@@ -17,6 +17,11 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    - name: Setup yq
+        uses: chrisdickinson/setup-yq@latest
+        with:
+          yq-version: 'v4.45.2'
+
     - name: Checkout x-deployk8s Repository
       uses: actions/checkout@v4
       with:
@@ -28,7 +33,9 @@ runs:
     - name: Update target version
       shell: bash
       run: |
-        sed -i "s/targetRevision: \".*\"/targetRevision: \"${{ inputs.release-version }}\"/" applications/${{ inputs.argocd-file }}
+        yq -i '
+          .spec.source.targetRevision = "${{ inputs.release-version }}"
+        ' applications/${{ inputs.argocd-file }}
 
     - name: Set pr title and body
       id: set-pr-title-and-body

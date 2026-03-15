@@ -42,7 +42,7 @@ runs:
       shell: bash
       run: |
         echo "pr_title=chore(${{ inputs.app-name }}): update target revision to ${{ inputs.release-version }}" >> $GITHUB_OUTPUT
-        echo "pr_body=Auto-generated PR to update target revision to \`${{ inputs.release-version }}\` for \`${{ inputs.app-name }}\` in \`${{ inputs.argocd-file }}\`" >> $GITHUB_OUTPUT
+        echo "pr_body=Auto-generated PR to update target revision to ${{ inputs.release-version }} for ${{ inputs.app-name }} in ${{ inputs.argocd-file }}" >> $GITHUB_OUTPUT
 
     - name: Create Branch
       shell: bash

@@ -3,13 +3,11 @@ name: Create Pre-release
 on:
   workflow_call:
 
-permissions:
-  contents: write
-
 jobs:
   pre-release:
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

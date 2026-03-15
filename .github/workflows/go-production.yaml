@@ -112,7 +112,7 @@ jobs:
 
       - name: Login to GHCR (Helm)
         run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ${{ steps.set-vars.outputs.registry }} -u ${{ github.actor }} --password-stdin
+          echo "${{ secrets.GHCR_TOKEN }}" | helm registry login ${{ steps.set-vars.outputs.registry }} -u ${{ github.actor }} --password-stdin
       
       - name: Helm package 
         run: |

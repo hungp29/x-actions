@@ -16,21 +16,12 @@ jobs:
     outputs:
       configuration: ${{ steps.parse-contract.outputs.contract }}
       release-version: ${{ steps.set-version.outputs.release-version }}
-      sha-short: ${{ steps.set-sha.outputs.sha-short }}
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set SHA
-        id: set-sha
-        run: echo "sha-short=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
-
-      - name: Set date
-        id: set-date
-        run: echo "date-time=$(date +'%Y%m%d')" >> "$GITHUB_OUTPUT"
       
       - name: Set version
         id: set-version
-        run: echo "release-version=${{ format('1.{0}.{1}-{2}-{3}', steps.set-date.outputs.date-time, github.run_number, github.ref_name, steps.set-sha.outputs.sha-short) }}" >> "$GITHUB_OUTPUT"
+        run: echo "release-version=${{ github.event.release.tag_name }}" >> "$GITHUB_OUTPUT"
       
       - name: Parse CI contract
         id: parse-contract

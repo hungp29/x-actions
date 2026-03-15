@@ -127,6 +127,10 @@ jobs:
     name: 'create-deployment-pr (${{ matrix.app.name }})'
     runs-on: ubuntu-latest
     needs: [retrieve-contract, docker-and-helm]
+    strategy:
+      fail-fast: true
+      matrix:
+        app: ${{ fromJson(needs.retrieve-contract.outputs.configuration).apps }}
     steps:
       - name: Set environment variables
         id: set-env
@@ -142,9 +146,9 @@ jobs:
           echo "argocd-file=$(echo "$CREATE_DEPLOYMENT_PR_CONFIG" | jq -r '."file"')" >> "$GITHUB_OUTPUT"
 
       - name: Create deployment PR
-        uses: hungp29/x-actions/.github/workflows/create-deployment-pr.yaml@v1.0.6
+        uses: hungp29/x-actions/.github/actions/create-deployment-pr@v1.0.2
         with:
           app-name: ${{ matrix.app.name }}
           release-version: ${{ steps.set-vars.outputs.release-version }}
-          argocd-file: ${{ steps.set-vars.outputs.create-deployment-pr-file }}
+          argocd-file: ${{ steps.set-vars.outputs.argocd-file }}
       

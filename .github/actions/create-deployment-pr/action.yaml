@@ -24,7 +24,7 @@ runs:
     
     - name: Update target version
       run: |
-        sed -i "s/targetRevision: \".*\"/targetRevision: \"${{ inputs.release-version }}\"/" applications/${{ env.ARGOCD_FILE }}
+        sed -i "s/targetRevision: \".*\"/targetRevision: \"${{ inputs.release-version }}\"/" applications/${{ inputs.argocd-file }}
 
     - name: Set pr title and body
       id: set-pr-title-and-body
@@ -35,14 +35,14 @@ runs:
 
     - name: Create Branch
       run: |
-        git checkout -b "chore/update-${{ inputs.app-name }}-${{ inputs.release-version }}"
+        git checkout -B chore/update-${{ inputs.app-name }}-${{ inputs.release-version }}
 
     - name: Commit Changes
       run: |
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
         git add applications/${{ env.ARGOCD_FILE }}
-        git commit -m "${{ steps.set-pr-title-and-body.outputs.pr_title }}" -m "${{ steps.set-pr-title-and-body.outputs.pr_body }}"
+        git commit -m "${{ steps.set-pr-title-and-body.outputs.pr_title }}" -m "${{ steps.set-pr-title-and-body.outputs.pr_body }}" || echo "No changes"
 
     - name: Push Changes
       run: |

@@ -1,0 +1,39 @@
+name: Create Pre-release
+
+on:
+  workflow_call:
+
+permissions:
+  contents: write
+
+jobs:
+  pre-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set SHA
+        id: set-sha
+        run: echo "sha-short=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Set date
+        id: set-date
+        run: echo "date-time=$(date +'%Y%m%d')" >> "$GITHUB_OUTPUT"
+      
+      - name: Set version
+        id: set-version
+        run: echo "release-version=${{ format('1.{0}.{1}-{2}-{3}', steps.set-date.outputs.date-time, github.run_number, github.ref_name, steps.set-sha.outputs.sha-short) }}" >> "$GITHUB_OUTPUT"
+
+      - name: Create pre-release
+        uses: softprops/action-gh-release@v2
+        with:
+          prerelease: true
+          tag_name: ${{ steps.set-version.outputs.release-version }}
+          body: |
+            This is a pre-release.
+            Please test it and provide feedback.
+            You can download the binary from the assets.
+            You can also view the release notes on the GitHub release page.
+            Thank you for your help!

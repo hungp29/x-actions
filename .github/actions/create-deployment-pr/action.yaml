@@ -41,8 +41,12 @@ runs:
       id: set-pr-title-and-body
       shell: bash
       run: |
-        echo "pr_title=chore(${{ inputs.app-name }}): update target revision to ${{ inputs.release-version }}" >> $GITHUB_OUTPUT
-        echo "pr_body=Auto-generated PR to update target revision to `${{ inputs.release-version }}` for `${{ inputs.app-name }}` in `${{ inputs.argocd-file }}`" >> $GITHUB_OUTPUT
+        VERSION="${{ inputs.release-version }}"
+        APP="${{ inputs.app-name }}"
+        FILE="${{ inputs.argocd-file }}"
+
+        echo "pr_title=chore($APP): update target revision to $VERSION" >> $GITHUB_OUTPUT
+        echo "pr_body=Auto-generated PR to update target revision to \`$VERSION\` for \`$APP\` in \`$FILE\`" >> $GITHUB_OUTPUT
 
     - name: Create Branch
       shell: bash

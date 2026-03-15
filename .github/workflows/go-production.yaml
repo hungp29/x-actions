@@ -116,6 +116,7 @@ jobs:
       
       - name: Helm package 
         run: |
+          helm dependency update ${{ steps.set-vars.outputs.chart-path }}
           helm package ${{ steps.set-vars.outputs.chart-path }} --version "${{ steps.set-vars.outputs.release-version }}"
 
       - name: Push Helm chart to GHCR

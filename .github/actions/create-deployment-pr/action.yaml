@@ -18,9 +18,9 @@ runs:
   using: 'composite'
   steps:
     - name: Setup yq
-        uses: chrisdickinson/setup-yq@latest
-        with:
-          yq-version: 'v4.45.2'
+      uses: chrisdickinson/setup-yq@latest
+      with:
+        yq-version: 'v4.45.2'
 
     - name: Checkout x-deployk8s Repository
       uses: actions/checkout@v4

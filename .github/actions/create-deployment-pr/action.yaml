@@ -57,7 +57,7 @@ runs:
 
     - name: Create PR
       env:
-        GH_TOKEN: ${{ secrets.X_DEPLOYK8S_REPO_TOKEN }}
+        GH_TOKEN: ${{ inputs.repo-token }}
       shell: bash
       run: |
         gh pr create \

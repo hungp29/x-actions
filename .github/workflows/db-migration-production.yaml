@@ -100,7 +100,7 @@ jobs:
         run: |
           yq -i '
             .migration.container.image.repository =
-            "${{ steps.set-vars.outputs.registry }}/${{ steps.set-vars.outputs.image-name }}" |
+            "${{ steps.set-vars.outputs.image-name }}" |
             .migration.container.image.tag =
             "${{ steps.set-vars.outputs.release-version }}"
           ' ${{ steps.set-vars.outputs.chart-path }}/values.yaml

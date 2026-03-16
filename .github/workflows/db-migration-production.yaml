@@ -99,9 +99,9 @@ jobs:
       - name: Update image tag in values.yaml (${{ matrix.app.name }})
         run: |
           yq -i '
-            .application.deployment.container.image.repository =
+            .migration.container.image.repository =
             "${{ steps.set-vars.outputs.registry }}/${{ steps.set-vars.outputs.image-name }}" |
-            .application.deployment.container.image.tag =
+            .migration.container.image.tag =
             "${{ steps.set-vars.outputs.release-version }}"
           ' ${{ steps.set-vars.outputs.chart-path }}/values.yaml
       

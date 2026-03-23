@@ -77,11 +77,6 @@ jobs:
         with:
           yq-version: 'v4.45.2'
 
-      - name: 'Setup Go ${{ steps.set-vars.outputs.go-version }}'
-        uses: actions/setup-go@v5
-        with:
-          go-version: ${{ steps.set-vars.outputs.go-version }}
-
       - name: Login to GHCR
         uses: docker/login-action@v3
         with:

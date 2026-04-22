@@ -1,13 +1,13 @@
-name: 'Production'
-run-name: 'Production - ${{ github.ref_name }}'
+name: "Production"
+run-name: "Production - ${{ github.ref_name }}"
 
 on:
   workflow_call:
     inputs:
       contract-file:
-        description: 'Path to CI contract file'
+        description: "Path to CI contract file"
         type: string
-        default: '.github/config/ci.yaml'
+        default: ".github/config/ci.yaml"
         required: false
 
 jobs:
@@ -18,11 +18,11 @@ jobs:
       release-version: ${{ steps.set-version.outputs.release-version }}
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set version
         id: set-version
         run: echo "release-version=${{ github.event.release.tag_name }}" >> "$GITHUB_OUTPUT"
-      
+
       - name: Parse CI contract
         id: parse-contract
         run: |
@@ -39,7 +39,7 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
   docker-and-helm:
-    name: 'docker-and-helm (${{ matrix.app.name }})'
+    name: "docker-and-helm (${{ matrix.app.name }})"
     runs-on: ubuntu-latest
     needs: retrieve-contract
     strategy:
@@ -67,14 +67,14 @@ jobs:
           echo "image-name=$(echo "$CONTAINERIZE_CONFIG" | jq -r '."image-name"')" >> "$GITHUB_OUTPUT"
           echo "release-version=${{ needs.retrieve-contract.outputs.release-version }}" >> "$GITHUB_OUTPUT"
           echo "chart-path=$(echo "$CONTAINERIZE_CONFIG" | jq -r '."chart-path"')" >> "$GITHUB_OUTPUT"
-      
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Setup yq
         uses: chrisdickinson/setup-yq@latest
         with:
-          yq-version: 'v4.45.2'
+          yq-version: "v4.45.2"
 
       - name: Login to GHCR
         uses: docker/login-action@v3
@@ -82,7 +82,7 @@ jobs:
           registry: ${{ steps.set-vars.outputs.registry }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-    
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -90,35 +90,36 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
+          file: ${{ steps.set-vars.outputs.dockerfile-path }}
           push: true
           tags: ${{ steps.set-vars.outputs.registry }}/${{ steps.set-vars.outputs.image-name }}:${{ steps.set-vars.outputs.release-version }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-      
+
       - name: Update image tag in values.yaml (${{ matrix.app.name }})
         run: |
           yq -i '
-            .migration.container.image.repository =
+            .application.deployment.container.image.repository =
             "${{ steps.set-vars.outputs.image-name }}" |
-            .migration.container.image.tag =
+            .application.deployment.container.image.tag =
             "${{ steps.set-vars.outputs.release-version }}"
           ' ${{ steps.set-vars.outputs.chart-path }}/values.yaml
-      
+
       - name: Update Chart.yaml version (${{ matrix.app.name }})
         run: |
           yq -i '.version = "${{ steps.set-vars.outputs.release-version }}"' \
             ${{ steps.set-vars.outputs.chart-path }}/Chart.yaml
-      
+
       - name: Set up Helm
         uses: azure/setup-helm@v4
         with:
-          version: 'v3.16.0'
+          version: "v3.16.0"
 
       - name: Login to GHCR (Helm)
         run: |
           echo "${{ secrets.GHCR_TOKEN }}" | helm registry login ${{ steps.set-vars.outputs.registry }} -u ${{ github.actor }} --password-stdin
-      
-      - name: Helm package 
+
+      - name: Helm package
         run: |
           helm dependency update ${{ steps.set-vars.outputs.chart-path }}
           helm package ${{ steps.set-vars.outputs.chart-path }} --version "${{ steps.set-vars.outputs.release-version }}"
@@ -126,9 +127,9 @@ jobs:
       - name: Push Helm chart to GHCR
         run: |
           helm push ${{ matrix.app.name }}-${{ steps.set-vars.outputs.release-version }}.tgz oci://${{ steps.set-vars.outputs.registry }}/${{ github.repository_owner }}/charts
-  
+
   create-deployment-pr:
-    name: 'create-deployment-pr (${{ matrix.app.name }})'
+    name: "create-deployment-pr (${{ matrix.app.name }})"
     runs-on: ubuntu-latest
     needs: [retrieve-contract, docker-and-helm]
     strategy:
@@ -142,7 +143,7 @@ jobs:
           APP_JSON='${{ toJson(matrix.app) }}'
           CREATE_DEPLOYMENT_PR_CONFIG=$(echo "$APP_JSON" | jq -c '.cicd.workflows.jobs["create-deployment-pr"]')
           echo "CREATE_DEPLOYMENT_PR_CONFIG=$CREATE_DEPLOYMENT_PR_CONFIG" >> $GITHUB_ENV
-      
+
       - name: Set common variables
         id: set-vars
         run: |
@@ -156,4 +157,3 @@ jobs:
           release-version: ${{ steps.set-vars.outputs.release-version }}
           argocd-file: ${{ steps.set-vars.outputs.argocd-file }}
           repo-token: ${{ secrets.DEPLOYK8S_REPO_TOKEN }}
-      

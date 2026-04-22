@@ -62,7 +62,6 @@ jobs:
       - name: Set common variables
         id: set-vars
         run: |
-          echo "go-version=$(echo "$BUILD_CONFIG" | jq -r '."go-version"')" >> "$GITHUB_OUTPUT"
           echo "dockerfile-path=$(echo "$CONTAINERIZE_CONFIG" | jq -r '."dockerfile-path"')" >> "$GITHUB_OUTPUT"
           echo "registry=$(echo "$CONTAINERIZE_CONFIG" | jq -r '."registry"')" >> "$GITHUB_OUTPUT"
           echo "image-name=$(echo "$CONTAINERIZE_CONFIG" | jq -r '."image-name"')" >> "$GITHUB_OUTPUT"
